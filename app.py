@@ -4,7 +4,8 @@ import time
 import platform
 
 from websockets.sync.server import serve
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, render_template
+
 
 from deepgram import (
     DeepgramClient,
@@ -16,7 +17,6 @@ from deepgram import (
 
 # Flask App
 app = Flask(__name__, static_folder="./public", static_url_path="/public")
-
 
 def hello(websocket):
     # Deepgram TTS WS connection
@@ -160,11 +160,16 @@ def serve_image(filename):
 def serve_index():
     return app.send_static_file("index.html")
 
+@app.route("/home", methods=["GET"])
+def home():
+    return render_template("home.html")
+
 
 def run_ui():
     app.run(debug=True, use_reloader=False)
+    # app.run(debug=True)
 
-
+# From what i understand i assume this websocket is served for as long as the server runs
 def run_ws():
     with serve(hello, "localhost", 3000) as server:
         server.serve_forever()
