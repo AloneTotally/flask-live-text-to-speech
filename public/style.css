@@ -76,7 +76,7 @@ main {
 }
 
 /* Button styling */
-button {
+/* button {
   background: linear-gradient(#000, #000) padding-box,
     linear-gradient(90deg, #201cff -91.5%, #13ef95 80.05%) border-box;
   height: 48px;
@@ -84,7 +84,7 @@ button {
   border: 1px solid transparent;
   border-radius: 4px;
   cursor: pointer;
-}
+} */
 
 /* Error message */
 #error-message {

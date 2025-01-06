@@ -1,9 +1,12 @@
-from langchain_ollama import ChatOllama
+from langchain_groq import ChatGroq
+import os 
+os.environ["GROQ_API_KEY"] = "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"
+llm = ChatGroq(model="llama3-8b-8192")
 
-llm = ChatOllama(
-    # model="llama3.2",
-    model='llama3-groq-tool-use'
-)
+# llm = ChatOllama(
+#     # model="llama3.2",
+#     model='llama3-groq-tool-use'
+# )
 
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
@@ -54,6 +57,10 @@ def order_food(item_name: str, quantity: int, special_requests: str = ""):
     Returns:
         str: Confirmation message or error.
     """
+    print(f'item_name is {item_name}')
+    print(f'quantity is {quantity}')
+    print(f'special_requests is {special_requests}')
+    
     item_name = " ".join(w.capitalize() for w in item_name.split())
     if item_name in menu:  # Assuming `menu` is a predefined dictionary with food items
         if item_name in orders:
@@ -136,39 +143,117 @@ If you are not able to get enough information using the tools, reply with 'I DON
 - Once the person concludes the order, call the tool `conclude_order()`
 
 Context:
-'Grilled Chicken Rice': 7.0,
-'Spicy Curry Noodles': 8.5,
-'Fried Egg Noodles': 6.5,
-'Cheese Sandwich': 4.5,
-'Beef Burger': 9.0,
-'Chocolate Cake': 5.5,
-'Crispy Chicken Wings': 6.0,
-'Fresh Garden Salad': 5.0,
-'Iced Coffee': 3.5,
-'Lemon Soda': 3.0,
-'Vegetable Soup': 6.0,
-'Spaghetti With Tomato Sauce': 7.5,
-'Vanilla Ice Cream': 4.0,
-'Chicken Wrap': 8.0,
-'Apple Pie': 4.5,
-'Mushroom Soup': 5.5,
-'Grilled Fish': 9.5,
-'Fruit Salad': 4.0,
-'Pepperoni Pizza': 10.0,
-'Milkshake': 5.0"""
+'Grilled Chicken Rice': 7.00,
+'Spicy Curry Noodles': 8.50,
+'Fried Egg Noodles': 6.50,
+'Cheese Sandwich': 4.50,
+'Beef Burger': 9.00,
+'Chocolate Cake': 5.50,
+'Crispy Chicken Wings': 6.00,
+'Fresh Garden Salad': 5.00,
+'Iced Coffee': 3.50,
+'Lemon Soda': 3.00,
+'Vegetable Soup': 6.00,
+'Spaghetti With Tomato Sauce': 7.50,
+'Vanilla Ice Cream': 4.00,
+'Chicken Wrap': 8.00,
+'Apple Pie': 4.50,
+'Mushroom Soup': 5.50,
+'Grilled Fish': 9.50,
+'Fruit Salad': 4.00,
+'Pepperoni Pizza': 10.00,
+'Milkshake': 5.00"""
 
 memory = MemorySaver()
 agent_executor = create_react_agent(llm, tools=tools, checkpointer=memory, state_modifier=template)
 config = {"configurable": {"thread_id": "testinglololololololol"}}
+
+
 # Use the agent
 # for chunk in agent_executor.stream(
 #     {"messages": [HumanMessage(content="What food do you have?")]}, config
 # ):
+    # print(chunk)
+    # print("----")
+    # print(chunk, flush=True, end="")
+    
+
+# query = input('User: ')
+# prompt = PromptTemplate.from_template('''
+#     You are a close friend offering support. 
+#     Based on the user's query: "{query}", give a friendly, relatable response, sharing personal thoughts or experiences. 
+#     If the query is unrelated or unfamiliar to you, smoothly shift the conversation to something you both enjoy or can relate to.
+# ''')
+# from langchain_ollama import OllamaLLM
+
+# llm = OllamaLLM(model='llama3.2')
+# response = (prompt | llm).stream({'query': query})
+# for chunk in response:
+#     print(chunk, flush=True, end="")
+
+# for chunk in agent_executor.stream(
+#     {"messages": [HumanMessage(content="Yes, i want to order a lemon soda.")]}, config
+# ):
 #     print(chunk)
 #     print("----")
 
-for chunk in agent_executor.stream(
-    {"messages": [HumanMessage(content="Yes, i want to order a lemon soda.")]}, config
-):
-    print(chunk)
-    print("----")
+
+
+# import os
+# os.system("")  # enables ansi escape characters in terminal
+
+# COLOR = {
+#     "HEADER": "\033[95m",
+#     "BLUE": "\033[94m",
+#     "GREEN": "\033[92m",
+#     "RED": "\033[91m",
+#     "ENDC": "\033[0m",
+# }
+
+# print(COLOR["GREEN"], "Testing Green!!", COLOR["ENDC"])
+# from app import socketio
+
+# async def run(usermsg):
+#     returned_output = []
+#     async for event in agent_executor.astream_events({"messages": [{"role": "user", "content": usermsg}]}, config=config, version="v2"):
+#         # kind = event["event"]
+#         # if kind == "on_chat_model_stream":
+#         #     print(event, end="|", flush=True)
+#         # print(COLOR["GREEN"], event, COLOR["ENDC"])  # Log all events to inspect their structure
+#         if event["event"] == "on_chat_model_stream":
+#             # print(event.get("data", {}).get("chunk", {}).get("content", ""), end="|", flush=True)
+#             print(COLOR["HEADER"], event["data"]["chunk"].content, COLOR["ENDC"], end="|", flush=True)
+#             socketio.emit('chat_model_stream', {'message': event["data"]["chunk"].content})
+#             returned_output.append(['chat_model_stream', {'message': event["data"]["chunk"].content}])
+
+#         elif event["event"] == "on_tool_start":  
+#             print(COLOR["BLUE"], "tool is being called", COLOR["ENDC"])
+#             socketio.emit('tool_start', {'message': 'tool to assist in ordering has been called'})
+#             returned_output.append('tool_start', {'message': 'tool to assist in ordering has been called'})
+
+#         elif event["event"] == "on_tool_end":  # Relax filter for debugging
+#             print(COLOR["BLUE"], "tool calling has ended", COLOR["ENDC"])
+#             socketio.emit('tool_end', {'message': 'tool to assist in ordering has been called'})
+#             returned_output.append('tool_end', {'message': 'tool to assist in ordering has been called'})
+    
+#     # Return the final output from the task
+#     final_result = {'status': 'done', 'message': 'Task is complete!', 'history': returned_output}
+    
+#     # Emit the final result after processing
+#     socketio.emit('task_complete', final_result)
+#     return returned_output
+
+        # if event["metadata"].get("langgraph_node") == "tools":
+        #     print(COLOR["BLUE"], event["data"]["chunk"].content, COLOR["ENDC"], end="|", flush=True)
+
+
+
+# async def run_with_await(usermsg):
+#     try:
+#         logging.info(f"Running with user message: {usermsg}")
+#         await run(usermsg)
+#     except Exception as e:
+#         logging.error(f"Error in run_with_await: {e}")
+#         raise  # Optionally raise or handle the exception as needed
+# asyncio.run(run("Can i order 1 beef burger, no special requests"))
+# print(f"a is now {a}")

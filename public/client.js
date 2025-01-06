@@ -1,3 +1,9 @@
+// import Alpine from 'alpinejs'
+ 
+// window.Alpine = Alpine
+ 
+// Alpine.start()
+
 const PLAY_STATES = {
     NO_AUDIO: "no_audio",
     LOADING: "loading",
@@ -7,6 +13,10 @@ const PLAY_STATES = {
 let playState = PLAY_STATES.NO_AUDIO;
 let audioPlayer;
 const textArea = document.getElementById("text-input");
+const llmTextArea = document.getElementById("text-input-model");
+const submit = document.getElementById('send-text')
+submit.addEventListener('click', sendDataModel)
+
 const errorMessage = document.querySelector("#error-message");
 let audioChunks = []; // Array to buffer incoming audio data chunks
 let socket;
@@ -47,7 +57,7 @@ function stopAudio() {
 function playButtonClick() {
     switch (playState) {
         case PLAY_STATES.NO_AUDIO:
-            sendData();
+            sendData(document.getElementById("text-input").value);
             break;
         case PLAY_STATES.PLAYING:
             stopAudio();
@@ -64,11 +74,89 @@ textArea.addEventListener("input", () => {
     errorMessage.innerHTML = "";
 });
 
+function sendDataModel() {
+    const textInput = document.getElementById("text-input-model").value;
+    console.log("got the textinput value");
+    Alpine.store('chat').messages.push({type: 'human', data: textInput})
+    llmTextArea.value = ''
+    
+    fetch("http://127.0.0.1:5000/api/model-text", {
+        method: "POST", // Use POST for sending data
+        headers: {
+          "Content-Type": "application/json" // Set the content type to JSON
+        },
+        body: JSON.stringify({text: textInput}) // Convert the JavaScript object to JSON
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json(); // Parse the JSON response from the server
+        })
+        .then(result => {
+          console.log("Server response:", result);
+        })
+        .catch(error => {
+          console.error("Error sending data:", error);
+        });
+}
+
+
+// Connect to the Socket.IO server
+const socketio = io();
+
+// Listen for "chat_model_stream" events and update the HTML element
+socketio.on('chat_model_stream', (data) => {
+    console.log("Received chat_model_stream:", data);
+    // const chatElement = document.getElementById('chatModelStream');
+    lastIndex = Alpine.store('chat').messages.length - 1
+    if (Alpine.store('chat').messages[lastIndex].type == 'chat_model_stream') {
+        Alpine.store('chat').messages[lastIndex].data = Alpine.store('chat').messages[lastIndex].data.concat(data.message)
+    } else {
+        Alpine.store('chat').messages.push({data: data.message, type: 'chat_model_stream'})
+    }
+});
+
+// Listen for "tool_start" events and update the HTML element
+socketio.on('tool_start', (data) => {
+    console.log("Received tool_start:", data);
+    const chatElement = document.getElementById('chatModelStream');  // Ensure you're updating the right element
+    Alpine.store('chat').messages.push({data: data.message, type: 'tool_start'})
+
+});
+
+
+// Listen for "tool_end" events and update the HTML element
+socketio.on('tool_end', (data) => {
+    console.log("Received tool_end:", data);
+    const chatElement = document.getElementById('chatModelStream');  // Ensure you're updating the right element
+    Alpine.store('chat').messages.push({data: data.message, type: 'tool_end'})
+
+});
+
+// Optional: Handle connection errors
+socketio.on('connect_error', (error) => {
+    console.error("Connection error:", error);
+});
+
+socketio.on('disconnect', () => {
+    console.log("Disconnected from server.");
+});
+
+    // Listen for "task_complete" event, which contains the final result
+socketio.on('on_chat_model_end', (data) => {
+    console.log("Task completed:", data);
+    // const chatElement = document.getElementById('chatModelStream');
+    sendData(data.message)
+    // chatElement.textContent = chatElement.textContent + "\n" + data.message;
+});
+
+
 // Function to send data to backend via WebSocket
-function sendData() {
-    const modelSelect = document.getElementById("models");
-    const selectedModel = modelSelect.options[modelSelect.selectedIndex].value;
-    const textInput = document.getElementById("text-input").value;
+function sendData(textInput) {
+    // const modelSelect = document.getElementById("models");
+    // const selectedModel = modelSelect.options[modelSelect.selectedIndex].value;
+    // const textInput = document.getElementById("text-input").value;
     if (!textInput) {
         errorMessage.innerHTML = "ERROR: Please add text!";
     } else {
@@ -79,16 +167,17 @@ function sendData() {
         // that's the reason why we only initialize once
         if (!socket) {
             // create a new WebSocket connection
-            socket = new WebSocket(`ws://localhost:3000`);
+            socket = new WebSocket(`ws://localhost:3001`);
 
             // disable the model select
-            modelSelect.disabled = true;
+            // modelSelect.disabled = true;
 
             socket.addEventListener("open", () => {
                 const data = {
                     text: textInput,
                 };
                 socket.send(JSON.stringify(data));
+                // Things are sent thru the websocket here
             });
 
             socket.addEventListener("message", (event) => {

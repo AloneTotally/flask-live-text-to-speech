@@ -2,10 +2,17 @@ import json
 import multiprocessing
 import time
 import platform
+from flask_socketio import SocketIO, emit
+from flask_cors import CORS
+import logging
+
 
 from websockets.sync.server import serve
-from flask import Flask, send_from_directory, render_template
+from flask import Flask, send_from_directory, render_template, request, jsonify
 
+import tracemalloc
+
+tracemalloc.start()
 
 from deepgram import (
     DeepgramClient,
@@ -17,6 +24,8 @@ from deepgram import (
 
 # Flask App
 app = Flask(__name__, static_folder="./public", static_url_path="/public")
+CORS(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 def hello(websocket):
     # Deepgram TTS WS connection
@@ -34,6 +43,7 @@ def hello(websocket):
         print(f"\n\n{flushed}\n\n")
         flushed_str = str(flushed)
         websocket.send(flushed_str)
+        # sending of flushed str
 
     def on_binary_data(self, data, **kwargs):
         print("Received binary data")
@@ -96,6 +106,7 @@ def hello(websocket):
             websocket.send(header)
             last_time = time.time()
 
+        # I assume this is where the data is sent
         websocket.send(data)
 
     def on_close(self, close, **kwargs):
@@ -108,10 +119,12 @@ def hello(websocket):
 
     try:
         while True:
+            # This is likely where the message is received
             message = websocket.recv()
             print(f"message from UI: {message}")
 
             data = json.loads(message)
+            # This is the text to be sent
             text = data.get("text")
             model = data.get("model")
 
@@ -139,6 +152,7 @@ def hello(websocket):
                     raise Exception("Unable to start Deepgram TTS WebSocket connection")
                 connected = True
 
+            # Flushing right upon sending the text to turn to speech
             dg_connection.send_text(text)
             dg_connection.flush()
 
@@ -150,6 +164,74 @@ def hello(websocket):
 def serve_others(filename):
     return send_from_directory(app.static_folder, filename)
 
+import os
+from llmmodel import agent_executor
+from llmmodel import config
+os.system("")  # enables ansi escape characters in terminal
+
+COLOR = {
+    "HEADER": "\033[95m",
+    "BLUE": "\033[94m",
+    "GREEN": "\033[92m",
+    "RED": "\033[91m",
+    "ENDC": "\033[0m",
+}
+async def run(usermsg):
+    returned_output = []
+    async for event in agent_executor.astream_events({"messages": [{"role": "user", "content": usermsg}]}, config=config, version="v2"):
+        # kind = event["event"]
+        # if kind == "on_chat_model_stream":
+        #     print(event, end="|", flush=True)
+        print(event)  # Log all events to inspect their structure
+        if event["event"] == "on_chat_model_stream":
+            # print(event.get("data", {}).get("chunk", {}).get("content", ""), end="|", flush=True)
+            print(COLOR["HEADER"], event["data"]["chunk"].content, COLOR["ENDC"], end="|", flush=True)
+            socketio.emit('chat_model_stream', {'message': event["data"]["chunk"].content})
+            returned_output.append(['chat_model_stream', {'message': event["data"]["chunk"].content}])
+
+        elif event["event"] == "on_tool_start":  
+            print(COLOR["BLUE"], "tool is being called", COLOR["ENDC"])
+            socketio.emit('tool_start', {'message': 'tool to assist in ordering has been called'})
+            returned_output.append('tool_start', {'message': 'tool to assist in ordering has been called'})
+
+        elif event["event"] == "on_tool_end":  # Relax filter for debugging
+            print(COLOR["BLUE"], "tool calling has ended", COLOR["ENDC"])
+            socketio.emit('tool_end', {'message': 'tool to assist in ordering has been called'})
+            returned_output.append('tool_end', {'message': 'tool to assist in ordering has been called'})
+    
+        elif event["event"] == "on_chat_model_end":
+            socketio.emit('on_chat_model_end', {'message': event["data"]["output"].content})
+
+    # Return the final output from the task
+    final_result = {'status': 'done', 'message': 'Task is complete!', 'history': returned_output}
+    
+    # Emit the final result after processing
+    socketio.emit('task_complete', final_result)
+    return returned_output
+
+
+@app.route("/api/model-text", methods=['POST'])
+async def model_text():
+    # from llmmodel import run
+    try:
+        data = request.get_json()
+        logging.info(f"Received data: {data}")
+
+        if not data:
+            return jsonify({"error": "Invalid JSON or no data provided"}), 400
+        output = await run(data["text"])
+        # socketio.start_background_task(run_with_await, data["text"])
+        logging.info(f"Run output: {output}")
+
+        # socketio.start_background_task(asyncio.create_task, run_with_await(data["text"]))
+
+        return jsonify({"message": "Data received successfully!", "data": output}), 200
+    except Exception as e:
+        # Handle errors and send a meaningful response
+        logging.error(f"Error in model_text: {e}")
+
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route("/assets/<path:filename>")
 def serve_image(filename):
@@ -158,7 +240,8 @@ def serve_image(filename):
 
 @app.route("/", methods=["GET"])
 def serve_index():
-    return app.send_static_file("index.html")
+    # return app.send_static_file("index.html")
+    return render_template("index.html")
 
 @app.route("/home", methods=["GET"])
 def home():
@@ -166,12 +249,13 @@ def home():
 
 
 def run_ui():
-    app.run(debug=True, use_reloader=False)
+    # app.run(debug=True, use_reloader=False)
+    socketio.run(app, debug=True, use_reloader=False)
     # app.run(debug=True)
 
 # From what i understand i assume this websocket is served for as long as the server runs
 def run_ws():
-    with serve(hello, "localhost", 3000) as server:
+    with serve(hello, "localhost", 3001) as server:
         server.serve_forever()
 
 
