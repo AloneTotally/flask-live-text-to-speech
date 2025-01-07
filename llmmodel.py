@@ -1,7 +1,12 @@
 from langchain_groq import ChatGroq
 import os 
-os.environ["GROQ_API_KEY"] = "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"
-llm = ChatGroq(model="llama3-8b-8192")
+api_key = ''
+with open('api-key.txt', 'r') as fin:
+    api_key = fin.readline()
+    print(api_key)
+
+os.environ["GROQ_API_KEY"] = api_key
+llm = ChatGroq(model="llama-3.1-8b-instant")
 
 # llm = ChatOllama(
 #     # model="llama3.2",
@@ -60,17 +65,24 @@ def order_food(item_name: str, quantity: int, special_requests: str = ""):
     print(f'item_name is {item_name}')
     print(f'quantity is {quantity}')
     print(f'special_requests is {special_requests}')
-    
+
     item_name = " ".join(w.capitalize() for w in item_name.split())
     if item_name in menu:  # Assuming `menu` is a predefined dictionary with food items
-        if item_name in orders:
-            orders[item_name]["quantity"] += quantity
-            orders[item_name]["special_requests"].append(special_requests)
-        else:
-            orders[item_name] = {
-                "quantity": quantity,
-                "special_requests": [special_requests],
-            }
+        # if item_name in orders:
+        #     orders[item_name]["quantity"] += quantity
+        #     orders[item_name]["special_requests"].append(special_requests)
+        # else:
+        #     orders[item_name] = {
+        #         "quantity": quantity,
+        #         "special_requests": [special_requests],
+        #     }
+        # orders[item_name]["quantity"] += quantity
+        # orders[item_name]["special_requests"] = orders[item_name]["special_requests"] + "," + special_requests
+        orders[item_name] = {
+            "quantity": quantity,
+            "special_requests": special_requests,
+        }
+
         return f"Order updated: {item_name} x{quantity} with requests: {special_requests or 'None'}."
     else:
         return f"Item '{item_name}' is not available in the menu."
@@ -130,7 +142,7 @@ If you are not able to get enough information using the tools, reply with 'I DON
 - Look for the exact item in the menu context and mention its price with the term "dollars".
 - If the item is found, confirm that it is available and offer further assistance.
 - If the item is not found in the context, state: "It does not exist on the menu." Do not guess or provide unrelated information.
-- If the input involves placing, viewing, or canceling an order, use the following tools:
+- If the input involves placing, viewing, or canceling an order, use the following tools provided to you:
     - `order_food(item_name: str, quantity: int, special_requests: str)` to place or modify a food order.
     - `view_order()` to view the current order summary.
     - `cancel_order(item_name: str)` to cancel a specific item from the order.
@@ -166,7 +178,7 @@ Context:
 
 memory = MemorySaver()
 agent_executor = create_react_agent(llm, tools=tools, checkpointer=memory, state_modifier=template)
-config = {"configurable": {"thread_id": "testinglololololololol"}}
+config = {"configurable": {"thread_id": "idkwhatconfig"}}
 
 
 # Use the agent

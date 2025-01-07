@@ -167,6 +167,7 @@ def serve_others(filename):
 import os
 from llmmodel import agent_executor
 from llmmodel import config
+from langchain_core.messages import ToolMessage
 os.system("")  # enables ansi escape characters in terminal
 
 COLOR = {
@@ -183,6 +184,9 @@ async def run(usermsg):
         # if kind == "on_chat_model_stream":
         #     print(event, end="|", flush=True)
         print(event)  # Log all events to inspect their structure
+
+        toolmsg_example = ToolMessage(content='42', tool_call_id='asdfvbhgf')
+
         if event["event"] == "on_chat_model_stream":
             # print(event.get("data", {}).get("chunk", {}).get("content", ""), end="|", flush=True)
             print(COLOR["HEADER"], event["data"]["chunk"].content, COLOR["ENDC"], end="|", flush=True)
@@ -192,15 +196,21 @@ async def run(usermsg):
         elif event["event"] == "on_tool_start":  
             print(COLOR["BLUE"], "tool is being called", COLOR["ENDC"])
             socketio.emit('tool_start', {'message': 'tool to assist in ordering has been called'})
-            returned_output.append('tool_start', {'message': 'tool to assist in ordering has been called'})
+            returned_output.append(['tool_start', {'message': 'tool to assist in ordering has been called'}])
 
         elif event["event"] == "on_tool_end":  # Relax filter for debugging
             print(COLOR["BLUE"], "tool calling has ended", COLOR["ENDC"])
             socketio.emit('tool_end', {'message': 'tool to assist in ordering has been called'})
-            returned_output.append('tool_end', {'message': 'tool to assist in ordering has been called'})
+            returned_output.append(['tool_end', {'message': 'tool to assist in ordering has been called'}])
     
         elif event["event"] == "on_chat_model_end":
-            socketio.emit('on_chat_model_end', {'message': event["data"]["output"].content})
+            # socketio.emit('on_chat_model_end', {'message': event["data"]["output"].content})
+            pass
+        elif event["event"] == "on_chain_end":
+            if len(event["data"]['output']['messages']) > 1 and isinstance(event["data"]['output']['messages'][-2], toolmsg_example):
+                socketio.emit('tool_msg', {'message': event["data"]['output']['messages'][-2].content})
+
+    
 
     # Return the final output from the task
     final_result = {'status': 'done', 'message': 'Task is complete!', 'history': returned_output}

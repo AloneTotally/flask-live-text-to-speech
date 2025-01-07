@@ -70,9 +70,9 @@ function playButtonClick() {
 }
 
 // Remove error message when the text area has a value
-textArea.addEventListener("input", () => {
-    errorMessage.innerHTML = "";
-});
+// textArea.addEventListener("input", () => {
+//     errorMessage.innerHTML = "";
+// });
 
 function sendDataModel() {
     const textInput = document.getElementById("text-input-model").value;
@@ -131,6 +131,15 @@ socketio.on('tool_end', (data) => {
     console.log("Received tool_end:", data);
     const chatElement = document.getElementById('chatModelStream');  // Ensure you're updating the right element
     Alpine.store('chat').messages.push({data: data.message, type: 'tool_end'})
+
+});
+
+// Listen for "tool_end" events and update the HTML element
+socketio.on('tool_msg', (data) => {
+    console.log("Received tool_msg:", data);
+    print(data)
+    // const chatElement = document.getElementById('chatModelStream');  // Ensure you're updating the right element
+    // Alpine.store('chat').messages.push({data: data.message, type: 'tool_end'})
 
 });
 
@@ -270,6 +279,6 @@ function sendData(textInput) {
 }
 
 // Event listener for the click event on the play button
-document
-    .getElementById("play-button")
-    .addEventListener("click", playButtonClick);
+// document
+//     .getElementById("play-button")
+//     .addEventListener("click", playButtonClick);

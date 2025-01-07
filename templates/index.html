@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html class="h-full">
 
 <head>
   <meta charset="utf-8" />
@@ -17,24 +17,25 @@
   <script>
     document.addEventListener('alpine:init', () => {
       Alpine.store('chat', {
-        messages: [{type: 'human', data: "Hi!"}, {type: 'chat_model_stream', data: "Hello! How may I help"}, {type: 'tool_start', data: 'tool is called'}, {type: 'tool_end', data: 'tool has ended'}, {type: 'chat_model_stream', data: "Ok! I will create this order."} ]
+        messages: [{ type: 'human', data: "Hi!" }, { type: 'chat_model_stream', data: "Hello! How may I help" }, { type: 'tool_start', data: 'tool is called' }, { type: 'tool_end', data: 'tool has ended' }, { type: 'chat_model_stream', data: "Ok! I will create this order." }, { type: 'human', data: "Hi!" }, { type: 'chat_model_stream', data: "Hello! How may I help" }, { type: 'tool_start', data: 'tool is called' }, { type: 'tool_end', data: 'tool has ended' }, { type: 'chat_model_stream', data: "Ok! I will create this order." }]
       });
     });
   </script>
 </head>
 
-<body>
-  <div>
-    <main>
+<body class=" h-full">
+  <div class=" h-full">
+    <main class=" h-full">
       <div class="title">
-        <a href="https://deepgram.com/">
-          <img class="dg-logo" src="assets/logo-6ad0fabf.png" />
-        </a>
-        <h1>Text-to-Speech</h1>
+
+        <h1 class="text-5xl font-extrabold dark:text-white p-3">Foodering - Chat</h1>
+
+        <!-- <h1>Text-to-Speech</h1> -->
       </div>
-      <div class="grid-container">
-        <section class="tts-section">
-          <label for="models">Choose a model:</label>
+
+      <!-- <div class="grid-container"> -->
+      <div class="flex flex-col items-center overflow-scroll h-full">
+        <!-- <label for="models">Choose a model:</label>
           <select id="models" name="models">
             <option value="aura-asteria-en">
               Asteria (Female US English)
@@ -57,30 +58,35 @@
             <button id="play-button">
               <i class="button-icon fa-solid fa-play"></i>
             </button>
+          </div> -->
+
+        <section class="flex flex-col items-center gap-1 w-full overflow-scroll h-5/6">
+          <!-- <div class="prose">
+            <h2>Chat with the ordering assistant</h2>
+          </div> -->
+          <div class="fixed bg-base-200 w-full bottom-0 flex flex-col items-center z-10 ">
+
+            <div class="w-2/3 p-5 flex flex-col justify-center items-center">
+
+              <!-- <label for="text-input-model" class=" text-lg">The actual input to the LLM:</label> -->
+
+              <!-- <textarea placeholder="Add text to be passed to the llm model:"></textarea> -->
+              <textarea id="text-input-model" class="textarea textarea-primary w-full"
+                placeholder="Ask to order, cancel, or view current order..."></textarea>
+
+              <button id="send-text" class="btn btn-primary w-full">
+                send text data
+              </button>
+            </div>
           </div>
-          <label for="text-input-model">The actual input to the LLM:</label>
-
-          <!-- <textarea placeholder="Add text to be passed to the llm model:"></textarea> -->
-          <textarea id="text-input-model"  class="textarea textarea-primary" placeholder="Ask to order, cancel, or view current order..."></textarea>
-
-          <button id="send-text" class="btn btn-primary">
-            send text data
-          </button>
-        </section>
-        <section class="information-section">
-          <h5 class="text-xl font-bold dark:text-white">Chat with the ordering assistant</h5>
-
-
           <!-- <div id="chatModelStream">Will be replaced by llm output</div> -->
           <template x-for="message in $store.chat.messages" x-data>
-            <div>
+            <div class="w-full mb-5">
               <template x-if="message.type == 'chat_model_stream'">
                 <div class="chat chat-start">
                   <div class="chat-image avatar">
                     <div class="w-10 rounded-full">
-                      <img
-                        alt="Bot profile picture"
-                        src="assets/dg_favicon.ico" />
+                      <img alt="Bot profile picture" src="assets/dg_favicon.ico" />
                     </div>
                   </div>
                   <div class="chat-header">Ordering assistant</div>
@@ -89,15 +95,14 @@
               </template>
               <template x-if="message.type == 'tool_start' || message.type == 'tool_end'">
                 <!-- <div class="chat chat-start"> -->
-                  <div class="divider" x-text="message.data"></div>
+                <div class="divider" x-text="message.data"></div>
                 <!-- </div> -->
               </template>
               <template x-if="message.type == 'human'">
                 <div class="chat chat-end">
                   <div class="chat-image avatar">
                     <div class="w-10 rounded-full">
-                      <img
-                        alt="User profile picture"
+                      <img alt="User profile picture"
                         src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
                     </div>
                   </div>
@@ -110,6 +115,7 @@
           </template>
         </section>
       </div>
+      <!-- </div> -->
     </main>
   </div>
   <script src="client.js"></script>

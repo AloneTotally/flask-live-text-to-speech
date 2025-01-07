@@ -131,13 +131,13 @@ textarea {
   width: 10rem;
 }
 
-/* Title */
+/* Title
 .title {
   display: flex;
   gap: 0.5rem;
   align-items: flex-start;
   margin-bottom: 4rem;
-}
+} */
 
 @media (min-width: 640px) {
   .title {

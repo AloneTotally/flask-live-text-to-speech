@@ -1,21 +1,191 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Main page</title>
-    <link href="{{ url_for('static', filename='output.css') }}" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Main page</title>
+  <link href="{{ url_for('static', filename='output.css') }}" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js" defer></script>
+  <script>
+    document.addEventListener('alpine:init', () => {
+      Alpine.store('orders', {
+        'Grilled Chicken Rice': {'quantity': 0, 'special_requests': ''},
+        'Spicy Curry Noodles': {'quantity': 0, 'special_requests': ''},
+        'Fried Egg Noodles': {'quantity': 0, 'special_requests': ''},
+        'Cheese Sandwich': {'quantity': 0, 'special_requests': ''},
+        'Beef Burger': {'quantity': 0, 'special_requests': ''},
+        'Chocolate Cake': {'quantity': 0, 'special_requests': ''},
+        'Crispy Chicken Wings': {'quantity': 0, 'special_requests': ''},
+        'Fresh Garden Salad': {'quantity': 0, 'special_requests': ''},
+        'Iced Coffee': {'quantity': 0, 'special_requests': ''},
+        'Lemon Soda': {'quantity': 0, 'special_requests': ''},
+        'Vegetable Soup': {'quantity': 0, 'special_requests': ''},
+        'Spaghetti With Tomato Sauce': {'quantity': 0, 'special_requests': ''},
+        'Vanilla Ice Cream': {'quantity': 0, 'special_requests': ''},
+        'Chicken Wrap': {'quantity': 0, 'special_requests': ''},
+        'Apple Pie': {'quantity': 0, 'special_requests': ''},
+        'Mushroom Soup': {'quantity': 0, 'special_requests': ''},
+        'Grilled Fish': {'quantity': 0, 'special_requests': ''},
+        'Fruit Salad': {'quantity': 0, 'special_requests': ''},
+        'Pepperoni Pizza': {'quantity': 0, 'special_requests': ''},
+        'Milkshake': {'quantity': 0, 'special_requests': ''}
+    })
+    
+      Alpine.store('menu', {
+        "Main Courses": {
+          "Grilled Chicken Rice": 7.0,
+          "Spicy Curry Noodles": 8.5,
+          "Fried Egg Noodles": 6.5,
+          "Beef Burger": 9.0,
+          "Spaghetti With Tomato Sauce": 7.5,
+          "Chicken Wrap": 8.0,
+          "Grilled Fish": 9.5
+        },
+        "Snacks & Sides": {
+          "Cheese Sandwich": 4.5,
+          "Crispy Chicken Wings": 6.0,
+          "Vegetable Soup": 6.0,
+          "Mushroom Soup": 5.5
+        },
+        "Desserts": {
+          "Chocolate Cake": 5.5,
+          "Vanilla Ice Cream": 4.0,
+          "Apple Pie": 4.5,
+          "Fruit Salad": 4.0
+        },
+        "Drinks": {
+          "Iced Coffee": 3.5,
+          "Lemon Soda": 3.0,
+          "Milkshake": 5.0
+        },
+        "Special Items": {
+          "Pepperoni Pizza": 10.0
+        }
+      });
+      Alpine.store('originalMenu', {
+        'Grilled Chicken Rice': 7.0,
+        'Spicy Curry Noodles': 8.5,
+        'Fried Egg Noodles': 6.5,
+        'Cheese Sandwich': 4.5,
+        'Beef Burger': 9.0,
+        'Chocolate Cake': 5.5,
+        'Crispy Chicken Wings': 6.0,
+        'Fresh Garden Salad': 5.0,
+        'Iced Coffee': 3.5,
+        'Lemon Soda': 3.0,
+        'Vegetable Soup': 6.0,
+        'Spaghetti With Tomato Sauce': 7.5,
+        'Vanilla Ice Cream': 4.0,
+        'Chicken Wrap': 8.0,
+        'Apple Pie': 4.5,
+        'Mushroom Soup': 5.5,
+        'Grilled Fish': 9.5,
+        'Fruit Salad': 4.0,
+        'Pepperoni Pizza': 10.0,
+        'Milkshake': 5.0
+    })
+
+    });
+  </script>
 </head>
+
 <body>
-    <!-- card -->
-<div class="card m-4 w-80 shadow">
-    <figure>
-      <img src="https://picsum.photos/id/103/500/250" />
-    </figure>
-    <div class="card-body">
-      <h2 class="card-title">DaisyUI Card</h2>
-      <p>Rerum reiciendis beatae tenetur excepturi aut pariatur est eos. Sit sit necessitatibus.</p>
+  <!-- card -->
+
+  <template x-data x-for="[section, items] in Object.entries($store.menu)">
+    <div>
+      <h2 class="my-3 text-2xl font-bold dark:text-white" x-text="section"></h2>
+      <div class="grid sm:grid-cols-4 grid-cols-2">
+        <template x-for="[name, price] in Object.entries(items)">
+          <div>
+            <template x-if="$store.orders[name].quantity > 0">
+              <div class="card image-full m-2 w-30 shadow border border-gray-800">
+                <figure class="w-auto h-auto">
+                  <img src="https://picsum.photos/id/103/500/250" />
+                </figure>
+                <div class="card-body">
+                  <h6 class="card-title text-lg" x-text="name"></h6>
+                  <p x-text="`$${price}`"></p>
+                  <div class="flex flex-row justify-center items-center gap-5" x-data>
+                    <button class=" text-xl font-bold" x-on:click="$store.orders[name].quantity = $store.orders[name].quantity + 1">+</button>
+                    <span class=" font-bold" x-text="$store.orders[name].quantity">0</span>
+                    <button class=" text-xl font-bold" x-on:click="$store.orders[name].quantity = $store.orders[name].quantity - 1">-</button>
+                  </div>
+                </div>
+              </div>
+            </template>
+            <template x-if="$store.orders[name].quantity == 0">
+              <button x-on:click="$store.orders[name].quantity += 1"  class="card-compact image m-2 w-30 shadow border border-gray-800">
+                <figure class="w-auto h-auto">
+                  <img src="https://picsum.photos/id/103/500/250" />
+                </figure>
+                <div class="card-body text-left">
+                  <h6 class="card-title text-lg" x-text="name"></h6>
+                  <p x-text="`$${price}`"></p>
+                  <!-- <div class="flex flex-row justify-center items-center gap-3" x-data>
+                    <button class="font-bold" x-on:click="$store.orders[name].quantity = $store.orders[name].quantity + 1">+</button>
+                    <span class=" font-bold" x-text="$store.orders[name].quantity">0</span>
+                    <button class="font-bold" x-on:click="$store.orders[name].quantity = $store.orders[name].quantity - 1">-</button>
+                  </div> -->
+                </div>
+              </button >
+            </template>
+          </div>
+        </template>
+      </div>
     </div>
-  </div>
+  </template>
+  <template x-data x-if="findCost() > 0">
+    <div class="w-full fixed bottom-0 flex flex-row justify-center">
+<!-- TODO: send data to server   -->
+      <a href="" class="btn w-5/6 btn-outline btn-primary flex-row flex my-2 bg-base-100" x-data>
+        <div class="">Proceed to order</div>
+        <div class="" x-text="`$${findCost()}`"></div>
+      </a>
+    </div>
+  </template>
+
 </body>
+
 </html>
+
+<script>
+  const findCost = () => {
+    let orders = Object.entries(Alpine.store('orders'))
+    let totalCost = 0
+    for (let i = 0; i < orders.length; i++) {
+      let item = orders[i][0]
+      let qty = orders[i][1].quantity
+      
+      costOfItem = Alpine.store('originalMenu')[item]
+      // console.log(item, qty, costOfItem)
+      totalCost += costOfItem * qty
+    }
+    return totalCost
+  }
+
+  const viewOrder = () => {
+    fetch("http://127.0.0.1:5000/api/model-text", {
+      method: "POST", // Use POST for sending data
+      headers: {
+        "Content-Type": "application/json" // Set the content type to JSON
+      },
+      body: JSON.stringify({text: textInput}) // Convert the JavaScript object to JSON
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json(); // Parse the JSON response from the server
+      })
+      .then(result => {
+        console.log("Server response:", result);
+      })
+      .catch(error => {
+        console.error("Error sending data:", error);
+      });
+
+      
+  }
+</script>
