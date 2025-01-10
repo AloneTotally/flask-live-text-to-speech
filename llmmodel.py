@@ -1,11 +1,14 @@
 from langchain_groq import ChatGroq
 import os 
 api_key = ''
-with open('api-key.txt', 'r') as fin:
-    api_key = fin.readline()
-    print(api_key)
 
-os.environ["GROQ_API_KEY"] = api_key
+if os.path.isfile('./api-key.txt'):
+    with open('api-key.txt', 'r') as fin:
+        api_key = fin.readline()
+        print(api_key)
+else:
+    os.environ["GROQ_API_KEY"] = api_key
+    # os.environ["DEEPGRAM_API_KEY"] = api_key
 llm = ChatGroq(model="llama-3.1-8b-instant")
 
 # llm = ChatOllama(
