@@ -10,28 +10,28 @@
   <script>
     document.addEventListener('alpine:init', () => {
       Alpine.store('orders', {
-        'Grilled Chicken Rice': {'quantity': 0, 'special_requests': ''},
-        'Spicy Curry Noodles': {'quantity': 0, 'special_requests': ''},
-        'Fried Egg Noodles': {'quantity': 0, 'special_requests': ''},
-        'Cheese Sandwich': {'quantity': 0, 'special_requests': ''},
-        'Beef Burger': {'quantity': 0, 'special_requests': ''},
-        'Chocolate Cake': {'quantity': 0, 'special_requests': ''},
-        'Crispy Chicken Wings': {'quantity': 0, 'special_requests': ''},
-        'Fresh Garden Salad': {'quantity': 0, 'special_requests': ''},
-        'Iced Coffee': {'quantity': 0, 'special_requests': ''},
-        'Lemon Soda': {'quantity': 0, 'special_requests': ''},
-        'Vegetable Soup': {'quantity': 0, 'special_requests': ''},
-        'Spaghetti With Tomato Sauce': {'quantity': 0, 'special_requests': ''},
-        'Vanilla Ice Cream': {'quantity': 0, 'special_requests': ''},
-        'Chicken Wrap': {'quantity': 0, 'special_requests': ''},
-        'Apple Pie': {'quantity': 0, 'special_requests': ''},
-        'Mushroom Soup': {'quantity': 0, 'special_requests': ''},
-        'Grilled Fish': {'quantity': 0, 'special_requests': ''},
-        'Fruit Salad': {'quantity': 0, 'special_requests': ''},
-        'Pepperoni Pizza': {'quantity': 0, 'special_requests': ''},
-        'Milkshake': {'quantity': 0, 'special_requests': ''}
-    })
-    
+        'Grilled Chicken Rice': { 'quantity': 0, 'special_requests': '' },
+        'Spicy Curry Noodles': { 'quantity': 0, 'special_requests': '' },
+        'Fried Egg Noodles': { 'quantity': 0, 'special_requests': '' },
+        'Cheese Sandwich': { 'quantity': 0, 'special_requests': '' },
+        'Beef Burger': { 'quantity': 0, 'special_requests': '' },
+        'Chocolate Cake': { 'quantity': 0, 'special_requests': '' },
+        'Crispy Chicken Wings': { 'quantity': 0, 'special_requests': '' },
+        'Fresh Garden Salad': { 'quantity': 0, 'special_requests': '' },
+        'Iced Coffee': { 'quantity': 0, 'special_requests': '' },
+        'Lemon Soda': { 'quantity': 0, 'special_requests': '' },
+        'Vegetable Soup': { 'quantity': 0, 'special_requests': '' },
+        'Spaghetti With Tomato Sauce': { 'quantity': 0, 'special_requests': '' },
+        'Vanilla Ice Cream': { 'quantity': 0, 'special_requests': '' },
+        'Chicken Wrap': { 'quantity': 0, 'special_requests': '' },
+        'Apple Pie': { 'quantity': 0, 'special_requests': '' },
+        'Mushroom Soup': { 'quantity': 0, 'special_requests': '' },
+        'Grilled Fish': { 'quantity': 0, 'special_requests': '' },
+        'Fruit Salad': { 'quantity': 0, 'special_requests': '' },
+        'Pepperoni Pizza': { 'quantity': 0, 'special_requests': '' },
+        'Milkshake': { 'quantity': 0, 'special_requests': '' }
+      })
+
       Alpine.store('menu', {
         "Main Courses": {
           "Grilled Chicken Rice": 7.0,
@@ -84,13 +84,24 @@
         'Fruit Salad': 4.0,
         'Pepperoni Pizza': 10.0,
         'Milkshake': 5.0
-    })
-
+      })
+      const receivedData = {{ sentorder | tojson }};
+      console.log(receivedData)
+  
+      if (receivedData.orders != undefined) {
+        Alpine.store('orders', receivedData.orders)
+      }
     });
+
   </script>
 </head>
 
 <body>
+  <div class="flex justify-between flex-row items-center">
+    <h2 class="text-4xl font-bold dark:text-white p-3">Foodering - Menu</h2>
+    <a href="/chatbot" class="btn btn-primary">Proceed to chatbot</a>
+
+  </div>
   <!-- card -->
 
   <template x-data x-for="[section, items] in Object.entries($store.menu)">
@@ -108,15 +119,18 @@
                   <h6 class="card-title text-lg" x-text="name"></h6>
                   <p x-text="`$${price}`"></p>
                   <div class="flex flex-row justify-center items-center gap-5" x-data>
-                    <button class=" text-xl font-bold" x-on:click="$store.orders[name].quantity = $store.orders[name].quantity + 1">+</button>
+                    <button class=" text-xl font-bold"
+                      x-on:click="$store.orders[name].quantity = $store.orders[name].quantity + 1">+</button>
                     <span class=" font-bold" x-text="$store.orders[name].quantity">0</span>
-                    <button class=" text-xl font-bold" x-on:click="$store.orders[name].quantity = $store.orders[name].quantity - 1">-</button>
+                    <button class=" text-xl font-bold"
+                      x-on:click="$store.orders[name].quantity = $store.orders[name].quantity - 1">-</button>
                   </div>
                 </div>
               </div>
             </template>
             <template x-if="$store.orders[name].quantity == 0">
-              <button x-on:click="$store.orders[name].quantity += 1"  class="card-compact image m-2 w-30 shadow border border-gray-800">
+              <button x-on:click="$store.orders[name].quantity += 1"
+                class="card-compact image m-2 w-30 shadow border border-gray-800">
                 <figure class="w-auto h-auto">
                   <img src="https://picsum.photos/id/103/500/250" />
                 </figure>
@@ -129,7 +143,7 @@
                     <button class="font-bold" x-on:click="$store.orders[name].quantity = $store.orders[name].quantity - 1">-</button>
                   </div> -->
                 </div>
-              </button >
+              </button>
             </template>
           </div>
         </template>
@@ -137,12 +151,12 @@
     </div>
   </template>
   <template x-data x-if="findCost() > 0">
-    <div class="w-full fixed bottom-0 flex flex-row justify-center">
-<!-- TODO: send data to server   -->
-      <a href="" class="btn w-5/6 btn-outline btn-primary flex-row flex my-2 bg-base-100" x-data>
+    <div class="w-full fixed bottom-0 flex flex-row justify-center z-30">
+      <!-- TODO: send data to server   -->
+      <button x-on:click="viewOrder()" class="btn w-5/6 btn-outline btn-primary flex-row flex my-2 bg-base-100" x-data>
         <div class="">Proceed to order</div>
         <div class="" x-text="`$${findCost()}`"></div>
-      </a>
+      </button>
     </div>
   </template>
 
@@ -157,7 +171,7 @@
     for (let i = 0; i < orders.length; i++) {
       let item = orders[i][0]
       let qty = orders[i][1].quantity
-      
+
       costOfItem = Alpine.store('originalMenu')[item]
       // console.log(item, qty, costOfItem)
       totalCost += costOfItem * qty
@@ -166,12 +180,12 @@
   }
 
   const viewOrder = () => {
-    fetch("http://127.0.0.1:5000/api/model-text", {
+    fetch("http://127.0.0.1:5000/api/order", {
       method: "POST", // Use POST for sending data
       headers: {
         "Content-Type": "application/json" // Set the content type to JSON
       },
-      body: JSON.stringify({text: textInput}) // Convert the JavaScript object to JSON
+      body: JSON.stringify({ orders: Alpine.store('orders'), menu: Alpine.store('originalMenu') }) // Convert the JavaScript object to JSON
     })
       .then(response => {
         if (!response.ok) {
@@ -181,11 +195,12 @@
       })
       .then(result => {
         console.log("Server response:", result);
+        window.location.href = window.location.href + '/order'
       })
       .catch(error => {
         console.error("Error sending data:", error);
       });
 
-      
+
   }
 </script>

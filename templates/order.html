@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order</title>
+    <link href="{{ url_for('static', filename='output.css') }}" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js" defer></script>
+
+</head>
+
+<body>
+    <main class="ml-5 mt-5">
+        <div class="prose">
+            <h2 class="mb-10"> Your Order</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="table">
+                <!-- head -->
+                <thead>
+                    <tr>
+                        <th class="text-left">Name</th>
+                        <th>Special Requests</th>
+                        <th>Cost</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-data x-for="[item, itemData] in Object.entries(receivedData['orders'])">
+                        <template x-if="itemData.quantity > 0">
+                            <!-- row 1 -->
+                            <tr class="text-left">
+                                <td>
+                                    <div class="flex items-center gap-3">
+                                        <div class="avatar">
+                                            <div class="mask mask-squircle h-12 w-12">
+                                                <img src="https://picsum.photos/id/103/500/250"
+                                                    alt="Avatar Tailwind CSS Component" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="font-bold" x-text="item"></div>
+                                            <div class="text-sm opacity-50" x-text="`x${itemData.quantity}`"></div>
+                                            <!-- <div x-text="JSON.stringify(itemData)"></div> -->
+                                        </div>
+                                    </div>
+                                </td>
+                                <td x-text="itemData.special_requests === '' ? '-' : itemData.special_requests"></td>
+                                <td x-text="`$${receivedData.menu[item]*itemData.quantity}`">Cost</td>
+                            </tr>
+                        </template>
+                    </template>
+                </tbody>
+                <!-- foot -->
+                <tfoot>
+                    <tr>
+                      <!-- <th></th> -->
+                      <td></td>
+                      <th>Total Cost</th>
+                      <!-- <td class="stat-value"></td> -->
+                      <td>
+                          <div class="stats shadow">
+                            <div class="stat px-0 py-3 flex flex-row">
+                                <!-- <div class="stat-title">Total Cost</div> -->
+                                <div x-data x-text="`$${calcCost()}`" class="stat-value"></div>
+                                <!-- <div class="stat-desc">21% more than last month</div> -->
+                            </div>
+                        </div>
+                      </td>
+                    </tr>
+              </tfoot>
+            </table>
+
+            <div  class="flex justify-between flex-row items-center">
+                <a href="/" class="btn btn-primary">Back</a>
+                
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>
+
+<script>
+    const receivedData = {{ sentorder | tojson }};
+    console.log(receivedData)
+
+    const calcCost = () => {
+        let totalCost = 0;
+        for (const [item, itemData] of Object.entries(receivedData['orders'])) {
+            totalCost += receivedData.menu[item] * itemData.quantity
+        }
+        return totalCost
+    }
+</script>

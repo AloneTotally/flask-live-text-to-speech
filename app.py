@@ -204,11 +204,11 @@ async def run(usermsg):
             returned_output.append(['tool_end', {'message': 'tool to assist in ordering has been called'}])
     
         elif event["event"] == "on_chat_model_end":
-            # socketio.emit('on_chat_model_end', {'message': event["data"]["output"].content})
-            pass
-        elif event["event"] == "on_chain_end":
-            if len(event["data"]['output']['messages']) > 1 and isinstance(event["data"]['output']['messages'][-2], toolmsg_example):
-                socketio.emit('tool_msg', {'message': event["data"]['output']['messages'][-2].content})
+            socketio.emit('on_chat_model_end', {'message': event["data"]["output"].content})
+            # pass
+        # elif event["event"] == "on_chain_end":
+        #     if len(event["data"]['output']['messages']) > 1 and isinstance(event["data"]['output']['messages'][-2], toolmsg_example):
+        #         socketio.emit('tool_msg', {'message': event["data"]['output']['messages'][-2].content})
 
     
 
@@ -219,18 +219,45 @@ async def run(usermsg):
     socketio.emit('task_complete', final_result)
     return returned_output
 
+# GLOBAL VARIABLE
+order = {}
+
+@app.route("/api/order", methods=['POST'])
+def update_order():
+    data = request.get_json()
+    global order
+    order = data
+    return jsonify({"message": "Data received successfully!", "data": data}), 200
+    
+@app.route("/order", methods=["GET"])
+def show_order():
+    global order
+    return render_template('order.html', sentorder=order)
+
+@app.route("/api/order-chatbot", methods=['POST'])
+def handle_chatbot_order():
+    from llmmodel import orders
+    from llmmodel import menu
+    global order
+    order = {'orders': orders, 'menu': menu}
+    print(order)
+    return jsonify({"message": "Data received successfully!"}), 200
+
 
 @app.route("/api/model-text", methods=['POST'])
 async def model_text():
+# def model_text():
     # from llmmodel import run
     try:
-        data = request.get_json()
-        logging.info(f"Received data: {data}")
+        logging.info(f"Raw data received: {request.data}")  # Log the raw request body
 
-        if not data:
-            return jsonify({"error": "Invalid JSON or no data provided"}), 400
-        output = await run(data["text"])
-        # socketio.start_background_task(run_with_await, data["text"])
+        text_data = request.get_json()
+        logging.info(f"Received data: {text_data}")
+
+        if not text_data:
+            return jsonify({"error": "Invalid JSON or no text_data provided"}), 400
+        output = await run(text_data.get("text", "the message did not get through properly, ignore this message and inform the user of the error."))
+        # socketio.start_background_task(run_with_await, text_data["text"])
         logging.info(f"Run output: {output}")
 
         # socketio.start_background_task(asyncio.create_task, run_with_await(data["text"]))
@@ -248,14 +275,15 @@ def serve_image(filename):
     return send_from_directory(app.static_folder, "assets/" + filename)
 
 
-@app.route("/", methods=["GET"])
+@app.route("/chatbot", methods=["GET"])
 def serve_index():
     # return app.send_static_file("index.html")
     return render_template("index.html")
 
-@app.route("/home", methods=["GET"])
+@app.route("/", methods=["GET"])
 def home():
-    return render_template("home.html")
+    global order
+    return render_template("home.html", sentorder=order)
 
 
 def run_ui():

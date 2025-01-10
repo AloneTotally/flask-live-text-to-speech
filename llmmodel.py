@@ -178,7 +178,7 @@ Context:
 
 memory = MemorySaver()
 agent_executor = create_react_agent(llm, tools=tools, checkpointer=memory, state_modifier=template)
-config = {"configurable": {"thread_id": "idkwhatconfig"}}
+config = {"configurable": {"thread_id": "newconfig"}}
 
 
 # Use the agent
