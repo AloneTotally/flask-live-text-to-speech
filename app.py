@@ -288,7 +288,7 @@ def home():
 
 def run_ui():
     # app.run(debug=True, use_reloader=False)
-    socketio.run(app, debug=True, use_reloader=False)
+    socketio.run(app, debug=True, use_reloader=False, allow_unsafe_werkzeug=True)
     # app.run(debug=True)
 
 # From what i understand i assume this websocket is served for as long as the server runs
