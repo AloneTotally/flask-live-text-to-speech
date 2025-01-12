@@ -249,7 +249,7 @@ def handle_chatbot_order():
 
 import asyncio
 @app.route("/api/model-text", methods=['POST'])
-async def model_text():
+def model_text():
 # def model_text():
     # from llmmodel import run
     try:
@@ -271,9 +271,9 @@ async def model_text():
 
         
         # loop = asyncio.get_running_loop()
-        task = loop.create_task(run(text_data.get("text", "the message did not get through properly, ignore this message and inform the user of the error.")))
-        output = await task
-        # output = asyncio.run(run(text_data.get("text", "the message did not get through properly, ignore this message and inform the user of the error.")))
+        # task = loop.create_task(run(text_data.get("text", "the message did not get through properly, ignore this message and inform the user of the error.")))
+        # output = await task
+        output = asyncio.run(run(text_data.get("text", "the message did not get through properly, ignore this message and inform the user of the error.")))
         
         # def run_in_background():
         #     return asyncio.run(run(text_data.get("text", "default fallback message")))
