@@ -244,8 +244,9 @@ def handle_chatbot_order():
     return jsonify({"message": "Data received successfully!"}), 200
 
 
+import asyncio
 @app.route("/api/model-text", methods=['POST'])
-async def model_text():
+def model_text():
 # def model_text():
     # from llmmodel import run
     try:
@@ -256,7 +257,7 @@ async def model_text():
 
         if not text_data:
             return jsonify({"error": "Invalid JSON or no text_data provided"}), 400
-        output = await run(text_data.get("text", "the message did not get through properly, ignore this message and inform the user of the error."))
+        output = asyncio.run(run(text_data.get("text", "the message did not get through properly, ignore this message and inform the user of the error.")))
         # socketio.start_background_task(run_with_await, text_data["text"])
         logging.info(f"Run output: {output}")
 
@@ -268,6 +269,32 @@ async def model_text():
         logging.error(f"Error in model_text: {e}")
 
         return jsonify({"error": str(e)}), 500
+
+### ASYNC VER THAT DOESNT WORK IN PRODUCTION ###
+# @app.route("/api/model-text", methods=['POST'])
+# async def model_text():
+# # def model_text():
+#     # from llmmodel import run
+#     try:
+#         logging.info(f"Raw data received: {request.data}")  # Log the raw request body
+
+#         text_data = request.get_json()
+#         logging.info(f"Received data: {text_data}")
+
+#         if not text_data:
+#             return jsonify({"error": "Invalid JSON or no text_data provided"}), 400
+#         output = await run(text_data.get("text", "the message did not get through properly, ignore this message and inform the user of the error."))
+#         # socketio.start_background_task(run_with_await, text_data["text"])
+#         logging.info(f"Run output: {output}")
+
+#         # socketio.start_background_task(asyncio.create_task, run_with_await(data["text"]))
+
+#         return jsonify({"message": "Data received successfully!", "data": output}), 200
+#     except Exception as e:
+#         # Handle errors and send a meaningful response
+#         logging.error(f"Error in model_text: {e}")
+
+#         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/assets/<path:filename>")
