@@ -1,3 +1,6 @@
+import eventlet
+eventlet.monkey_patch()  # Call this first!
+
 import json
 import multiprocessing
 import time
@@ -246,7 +249,7 @@ def handle_chatbot_order():
 
 import asyncio
 @app.route("/api/model-text", methods=['POST'])
-def model_text():
+async def model_text():
 # def model_text():
     # from llmmodel import run
     try:
@@ -268,7 +271,8 @@ def model_text():
 
         
         # loop = asyncio.get_running_loop()
-        output = loop.create_task(run(text_data.get("text", "the message did not get through properly, ignore this message and inform the user of the error.")))
+        task = loop.create_task(run(text_data.get("text", "the message did not get through properly, ignore this message and inform the user of the error.")))
+        output = await task
         # output = asyncio.run(run(text_data.get("text", "the message did not get through properly, ignore this message and inform the user of the error.")))
         
         # def run_in_background():
@@ -279,7 +283,7 @@ def model_text():
 
         # socketio.start_background_task(asyncio.create_task, run_with_await(data["text"]))
 
-        return jsonify({"message": "Data received successfully!", "data": "Request is being processed!"}), 200
+        return jsonify({"message": "Data received successfully!", "data": output}), 200
     except Exception as e:
         # Handle errors and send a meaningful response
         logging.error(f"Error in model_text: {e}")
