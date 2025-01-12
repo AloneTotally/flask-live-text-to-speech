@@ -80,7 +80,7 @@ function sendDataModel() {
     Alpine.store('chat').messages.push({type: 'human', data: textInput})
     llmTextArea.value = ''
     
-    fetch("http://127.0.0.1:5000/api/model-text", {
+    fetch("http://127.0.0.1:10000/api/model-text", {
         method: "POST", // Use POST for sending data
         headers: {
           "Content-Type": "application/json" // Set the content type to JSON

@@ -288,7 +288,7 @@ def home():
 
 def run_ui():
     # app.run(debug=True, use_reloader=False)
-    port = int(os.getenv("PORT", 8000))  # Default to port 8000 if PORT is not set
+    port = int(os.getenv("PORT", 10000))  # Default to port 8000 if PORT is not set
 
     socketio.run(app, debug=True, use_reloader=False, allow_unsafe_werkzeug=True,port=port)
     # app.run(debug=True)
