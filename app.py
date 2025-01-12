@@ -257,7 +257,8 @@ def model_text():
 
         if not text_data:
             return jsonify({"error": "Invalid JSON or no text_data provided"}), 400
-        output = asyncio.run(run(text_data.get("text", "the message did not get through properly, ignore this message and inform the user of the error.")))
+        loop = asyncio.get_event_loop()
+        output = loop.create_task(run(text_data.get("text", "the message did not get through properly, ignore this message and inform the user of the error.")))
         # socketio.start_background_task(run_with_await, text_data["text"])
         logging.info(f"Run output: {output}")
 
