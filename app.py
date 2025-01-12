@@ -260,7 +260,14 @@ def model_text():
         
         # output = await run(text_data.get("text", "the message did not get through properly, ignore this message and inform the user of the error."))
 
-        loop = asyncio.get_running_loop()
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+
+        
+        # loop = asyncio.get_running_loop()
         output = loop.create_task(run(text_data.get("text", "the message did not get through properly, ignore this message and inform the user of the error.")))
         # output = asyncio.run(run(text_data.get("text", "the message did not get through properly, ignore this message and inform the user of the error.")))
         
